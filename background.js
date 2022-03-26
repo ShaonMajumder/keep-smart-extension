@@ -7,6 +7,8 @@ const LOGIN_PAGE = HOST_MAIN+"/login";
 const HOME_PAGE = HOST_MAIN+"/home";
 const TOKEN_PAGE = HOST_MAIN + '/exttoken';
 
+
+
 /**
  * Get cookie for given cookie name
  * @param {cookie name} cname 
@@ -192,7 +194,9 @@ function close_login_popup(close_all_login=false){
         }
     });
 }
-
+function timestampSeconds(){
+    return new Date().getTime() / 1000;
+}
 
 /**
  * 
@@ -218,7 +222,7 @@ function getTimezoneToOffset(myTimezoneName){
     var timeZoneOffset_ = parseInt(timezoneString.split(':')[0])*60;
     // Checking for a minutes offset and adding if appropriate
     if (timezoneString.includes(":")) {
-        console.log(timeZoneOffset_);
+        // console.log(timeZoneOffset_);
         var timeZoneOffset_ = timeZoneOffset_ + parseInt(timezoneString.split(':')[1]);
     }
     return timeZoneOffset_;
@@ -248,14 +252,17 @@ function localGMTTime(){
  * Function To send web browsing log of user
  * @param {*} activeTab 
  */
-function send_visit_log(activeTab){
+function send_visit_log(activeTab,time_,previous_time_ = null,spent_time = null){
     const event = new Date('05 October 2011 14:48 UTC');
 
     chrome.storage.sync.get(['access_token'], function(result) {
         var data = {
             title : activeTab.title,
             url : activeTab.url,
-            visit_time : localGMTTime()
+            visit_time : time_,
+            tab_id : activeTab.id,
+            previous_gmt_time : previous_time_,
+            spent_time : spent_time
         };
         $.ajax({
             url: VISIT_LOG_URL,
@@ -280,15 +287,73 @@ function send_visit_log(activeTab){
     });
 }
 
+chrome.runtime.onInstalled.addListener(function(details){
+    if(details.reason == "install"){
+        //call a function to handle a first install
+        alert('thanks for installing');
+    }else if(details.reason == "update"){
+        //call a function to handle an update
+        alert('thanks for updating');
+    }
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        let activeTab = tabs[0];
+        webLogin(activeTab);
+    });
+    
+});
+
+// First Auth Problem
+
+/**
+ * On Created
+ */
+chrome.tabs.onCreated.addListener(function(tab){
+    chrome.storage.local.set({
+        [tab.id] : { 
+            'start_timestamp' : timestampSeconds(),
+            'start_gmt_time' : localGMTTime()
+        }
+    });
+}); 
+
 /**
  * On Page Load
  */
 chrome.tabs.onUpdated.addListener( function (tabId, changeInfo, tab) {
     if (changeInfo.status == 'complete') {
+        
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
             var activeTab = tabs[0];
-            send_visit_log(activeTab);
+            var time_ = localGMTTime();
+            chrome.storage.local.get(null, function(result){
+                var allKeys = Object.keys(result);
+                if(allKeys.includes(tabId.toString())){
+                    var tab_info = result[tabId];
+                    spent_time = timestampSeconds() - tab_info.start_timestamp;
+                    var previous_time_ = tab_info.start_gmt_time;
+                    send_visit_log(activeTab,time_,previous_time_,spent_time);
+                    chrome.storage.local.remove(tabId.toString());
+                    chrome.storage.local.set({
+                        [tabId] : { 
+                            'start_timestamp' : timestampSeconds(),
+                            'start_gmt_time' : time_
+                        }
+                    });
+                }else{
+                    send_visit_log(activeTab,time_);
+                    chrome.storage.local.set({
+                        [tabId] : { 
+                            'start_timestamp' : timestampSeconds(),
+                            'start_gmt_time' : time_
+                        }
+                    });
+                }
+            });
+
+            
         });
+    }else if (changeInfo.status == 'loading') {
+        
     }
 })
 
@@ -317,3 +382,7 @@ chrome.runtime.onMessage.addListener(function(request, sender) {
 // chrome.windows.onRemoved.addListener(function(windowid) {
 //     alert("window closed")
 //    })
+
+// chrome.tabs.onActivated.addListener(
+//     callback: function,
+//   )
