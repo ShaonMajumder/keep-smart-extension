@@ -1,0 +1,50 @@
+{
+  "extName": {
+    "message": "রাখার পকেট | Keep Smart"
+  },
+  "extDesc": {
+    "message": "Select a word or two, click the icon in the toolbar, learn something new."
+  },
+  "whichLang": {
+    "message": "Which language edition should I load?"
+  },
+  "whichColor": {
+    "message": "Which color should I load?"
+  },
+  "autoLangOn": {
+    "message": "try to match the language of the active page"
+  },
+  "autoLangOff": {
+    "message": "always open"
+  },
+  "whichVersion": {
+    "message": "Which version should I display?"
+  },
+  "miniVersion": {
+    "message": "the mobile version"
+  },
+  "fullVersion": {
+    "message": "the desktop version"
+  },
+  "whenSign": {
+    "message": "Clicking the green corner opens Wikipedia"
+  },
+  "newTab": {
+    "message": "in a new tab"
+  },
+  "newWin": {
+    "message": "in a new window"
+  },
+  "popupDim": {
+    "message": "Popup dimensions"
+  },
+  "popupWidth": {
+    "message": "width:"
+  },
+  "popupHeight": {
+    "message": "height:"
+  },
+  "save": {
+    "message": "Save"
+  }
+}

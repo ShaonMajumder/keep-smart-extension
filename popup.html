@@ -1,0 +1,85 @@
+<html>
+<head>
+  
+<title></title>
+<!-- <script type="text/javascript" src="options.js"></script> -->
+<!-- Select2 CSS --> 
+<link href="select2.min.css" rel="stylesheet" /> 
+
+
+
+
+<style>
+fieldset {
+  margin-top: 1em;
+}
+fieldset:first-child {
+  margin-top: 0;
+}
+.item {
+  margin: 0.7em 0.5em 0.6em 0.5em;
+}
+#autoLangOffSpan {
+  margin-right: 0.5em;
+}
+#wikiLangTxt {
+  width: 3em;
+  text-align: center;
+}
+#footer {
+  display: flex;
+  flex-flow: row;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1em;
+}
+</style>
+</head>
+<body>
+  This is a popup
+  <select class="select2" id="category" name="category" multiple>
+    
+    <option value="saab">Saab</option>
+    <option value="opel">Opel</option>
+    <option value="audi">Audi</option>
+  </select>
+  <fieldset>
+    <legend id="whichColor"></legend>
+    <div class="item">
+      <input type="color" name="lang" id="autoColorOnRad" />
+      <label for="autoColorOnRad">
+        <span id="autoColorOnSpan"></span>
+      </label>
+    </div>
+    
+  </fieldset>
+  <fieldset>
+    <legend id="whichLang"></legend>
+    <div class="item">
+      <input type="radio" name="lang" id="autoLangOnRad" />
+      <label for="autoLangOnRad">
+        <span id="autoLangOnSpan"></span>
+      </label>
+    </div>
+    <div class="item">
+      <input type="radio" name="lang" id="autoLangOffRad" />
+      <label for="autoLangOffRad">
+        <span id="autoLangOffSpan"></span>
+        <b>https://<input type="text" id="wikiLangTxt" />.wikipedia.org/</b>
+      </label>
+    </div>
+  </fieldset>
+  <div id="footer">
+    <button id="save"></button>
+  </div>
+<!-- jQuery --> <script src="jquery-3.5.1.min.js"></script> 
+
+<!-- Select2 JS --> 
+<script src="select2.min.js"></script>
+<script>
+   $(document).ready(function() {
+        $('.select2').select2();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+{
+  "extName": {
+    "message": "FRWikipedia Lookup - Browser Action"
+  },
+  "extDesc": {
+    "message": "Consultez Wikipédia sans changer d'onglet."
+  },
+  "whichLang": {
+    "message": "Quelle édition de Wikipédia charger&nbsp;?"
+  },
+  "autoLangOn": {
+    "message": "même langue que la page active"
+  },
+  "autoLangOff": {
+    "message": "toujours ouvrir"
+  },
+  "whichVersion": {
+    "message": "Quelle version de Wikipédia charger&nbsp;?"
+  },
+  "miniVersion": {
+    "message": "la version mobile"
+  },
+  "fullVersion": {
+    "message": "la version bureau"
+  },
+  "whenSign": {
+    "message": "Cliquer le coin vert ouvre Wikipédia"
+  },
+  "newTab": {
+    "message": "dans un nouvel onglet"
+  },
+  "newWin": {
+    "message": "dans une nouvelle fenêtre"
+  },
+  "popupDim": {
+    "message": "Dimensions de la popup"
+  },
+  "popupWidth": {
+    "message": "largeur&nbsp;:"
+  },
+  "popupHeight": {
+    "message": "hauteur&nbsp;:"
+  },
+  "save": {
+    "message": "Enregistrer"
+  }
+}
