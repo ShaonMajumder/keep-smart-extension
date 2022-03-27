@@ -90,7 +90,7 @@ function saveTokenFromResponse(domContent) {
     part = part.replace(/\\/g, '');
     var json = JSON.parse(part);
     var access_token =  json.access_token;
-    chrome.storage.sync.set({"access_token": access_token}, function() {
+    chrome.storage.local.set({"access_token": access_token}, function() {
         console.log('Value is set to ' + access_token);
     });
 }
@@ -117,29 +117,27 @@ function webParserlogin(activeTab){
  * @param {*} activeTab 
  */
 function webLogin(activeTab){
-    $.ajax({
+    var loginAjax = $.ajax({
         url: HOST_MAIN+'/weblogin',
         dataType: 'json',
         type: 'get',
         contentType: 'application/json',
         processData: false,
-        success: function( responseData, textStatus, Lxhr ){
-            var access_token = responseData.data.access_token;
-            chrome.storage.sync.set({"access_token": access_token}, function() {});
-            close_login_popup();
-        },
-        error: function( jqXhr, textStatus, errorThrown ){
-            if ( jqXhr.status == 403 && activeTab.url != LOGIN_PAGE){
-                chrome.storage.sync.set({"back_url": activeTab.url, "back" : 1 }, function() {
-                    console.log('back url ' + activeTab.url);
-                });
-                window.open(LOGIN_PAGE);
-            }else{
-                chrome.storage.sync.set({"login_page_id": activeTab.id}, function() {
-                    console.log('login_page_id ' + activeTab.id);
-                });
-            }   
-        }
+        
+    });
+
+    loginAjax.done(function( responseData, textStatus, Lxhr ){
+        var access_token = responseData.data.access_token;
+        chrome.storage.local.set({"access_token": access_token});
+        close_login_popup();
+    })
+    .catch(function( jqXhr, textStatus, errorThrown ){
+        if ( jqXhr.status == 403 && activeTab.url != LOGIN_PAGE){
+            window.open(LOGIN_PAGE);
+            // here edit
+        }else{
+            chrome.storage.local.set({"login_page_id": activeTab.id});
+        }   
     });
 }
 
@@ -162,7 +160,7 @@ function promptLogin(){
         processData: false,
         success: function( responseData, textStatus, Lxhr ){
             var access_token = responseData.data.access_token;
-            chrome.storage.sync.set({"access_token": access_token}, function() {});
+            chrome.storage.local.set({"access_token": access_token}, function() {});
             close_login_popup();
         },
         error: function( jqXhr, textStatus, errorThrown ){
@@ -177,23 +175,22 @@ function promptLogin(){
  * @param {If true closes all login window} close_all_login 
  */
 function close_login_popup(close_all_login=false){
-    chrome.storage.sync.get(['back','back_url','login_page_id'], function(result) {
-        if(result.back == 1 ){                     
-            chrome.storage.sync.set({"back": 0, 'back_url': ""}, function(){});
-            if(close_all_login){
-                chrome.tabs.query({},function(tabs){     
-                    console.log("\n/////////////////////\n");
-                    tabs.forEach(function(tab){
-                    console.log(tab.url);
-                    if(tab.url == HOME_PAGE)
-                        chrome.tabs.remove(tab.id, function() { });
-                    });
+    chrome.storage.local.get(['login_page_id'], function(result) {    
+        if(close_all_login){
+            chrome.tabs.query({},function(tabs){     
+                console.log("\n/////////////////////\n");
+                tabs.forEach(function(tab){
+                console.log(tab.url);
+                if(tab.url == HOME_PAGE)
+                    chrome.tabs.remove(tab.id, function() { });
                 });
-            }
-            chrome.tabs.remove(result.login_page_id, function() { });
+            });
         }
+        chrome.tabs.remove(result.login_page_id, function() { });
+        chrome.storage.local.remove("login_page_id");
     });
 }
+
 function timestampSeconds(){
     return new Date().getTime() / 1000;
 }
@@ -252,16 +249,16 @@ function localGMTTime(){
  * Function To send web browsing log of user
  * @param {*} activeTab 
  */
-function send_visit_log(activeTab,time_,previous_time_ = null,spent_time = null){
+function send_visit_log(activeTab,time_,tab_open_time = null,spent_time = null){
     const event = new Date('05 October 2011 14:48 UTC');
 
-    chrome.storage.sync.get(['access_token'], function(result) {
+    chrome.storage.local.get(['access_token'], function(result) {
         var data = {
             title : activeTab.title,
             url : activeTab.url,
             visit_time : time_,
             tab_id : activeTab.id,
-            previous_gmt_time : previous_time_,
+            tab_open_gmt_time : tab_open_time,
             spent_time : spent_time
         };
         $.ajax({
@@ -298,6 +295,28 @@ chrome.runtime.onInstalled.addListener(function(details){
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
         let activeTab = tabs[0];
         webLogin(activeTab);
+        alert('on installation after weblogin');
+        // .then(response => {
+        //     alert('on installation after weblogin');
+        //     // if (response.status == 200) {
+        //     //   return response.json();
+        //     // } else {
+        //     //   throw new Error(response.status);
+        //     // }
+        // });
+            
+        
+        
+        // var time_ = localGMTTime();
+
+        // chrome.storage.local.set({ 'active_tab' : activeTab.id });
+        // chrome.storage.local.set({
+        //     [activeTab.id] : { 
+        //         'start_timestamp' : timestampSeconds(),
+        //         'start_gmt_time' : time_
+        //     }
+        // });
+        // send_visit_log(activeTab,time_);
     });
     
 });
@@ -307,18 +326,25 @@ chrome.runtime.onInstalled.addListener(function(details){
 /**
  * On Created
  */
+/*
 chrome.tabs.onCreated.addListener(function(tab){
+    alert('tab created '+tab.id);
+    chrome.storage.local.set({ 'active_tab' : tab.id });
     chrome.storage.local.set({
         [tab.id] : { 
-            'start_timestamp' : timestampSeconds(),
-            'start_gmt_time' : localGMTTime()
+            'start_timestamp'   : timestampSeconds(),
+            'start_gmt_time'    : localGMTTime()
         }
     });
 }); 
+*/
+
+
 
 /**
  * On Page Load
  */
+/*
 chrome.tabs.onUpdated.addListener( function (tabId, changeInfo, tab) {
     if (changeInfo.status == 'complete') {
         
@@ -330,8 +356,8 @@ chrome.tabs.onUpdated.addListener( function (tabId, changeInfo, tab) {
                 if(allKeys.includes(tabId.toString())){
                     var tab_info = result[tabId];
                     spent_time = timestampSeconds() - tab_info.start_timestamp;
-                    var previous_time_ = tab_info.start_gmt_time;
-                    send_visit_log(activeTab,time_,previous_time_,spent_time);
+                    var tab_open_time = tab_info.start_gmt_time;
+                    send_visit_log(activeTab,time_,tab_open_time,spent_time);
                     chrome.storage.local.remove(tabId.toString());
                     chrome.storage.local.set({
                         [tabId] : { 
@@ -386,3 +412,90 @@ chrome.runtime.onMessage.addListener(function(request, sender) {
 // chrome.tabs.onActivated.addListener(
 //     callback: function,
 //   )
+
+
+chrome.tabs.onActiveChanged.addListener( function(tabId, info) {
+    var currentTabId        = tabId;         // For comparison
+    var windowId = info.windowId;
+    var time_ = localGMTTime();
+    alert('activated'+currentTabId);
+    
+    //currentTabId exists before or new
+
+    chrome.storage.local.get(null, function(result){
+        var allKeys = Object.keys(result);
+        if(allKeys.includes('active_tab')){
+            var previousTabId = result.active_tab;
+            chrome.storage.local.set({ 'active_tab' : currentTabId });
+
+            if(currentTabId != previousTabId){
+                var previousTabId = result.active_tab;
+                var previous_tab_info = result[previousTabId];
+                alert(previousTabId);
+                // if(previous_tab_info.start_timestamp != null){
+                //     var spent_time = timestampSeconds() - previous_tab_info.start_timestamp;
+                //     var previous_tab_open_time = tab_info.start_gmt_time;
+                //     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+                //         console.log(tabs);
+
+                //         tabs.forEach(element=>{
+                //             console.log(element.id);
+                //             if(element.id == previousTabId){
+                //                 alert('orange');
+                //             }
+                //         })
+
+                //         // var activeTab = tabs[0];
+                //         // send_visit_log(activeTab,time_,previous_tab_open_time,spent_time);
+                //         // chrome.storage.local.remove(previousTabId.toString());
+                //         // chrome.storage.local.set({
+                //         //     [tabId] : { 
+                //         //         'start_timestamp' : null,
+                //         //         'start_gmt_time' : previous_tab_open_time
+                //         //     }
+                //         // });
+                //     });
+                // }
+               
+            }
+            
+
+            // previous tab actions
+            
+            
+            
+            // send_visit_log(activeTab,time_,tab_open_time,spent_time);
+            // chrome.storage.local.remove(tabId.toString());
+            // chrome.storage.local.set({
+            //     [tabId] : { 
+            //         'start_timestamp' : timestampSeconds(),
+            //         'start_gmt_time' : tab_open_time
+            //     }
+            // });
+        }
+
+        // if(allKeys.includes(tabId.toString())){
+        //     var tab_info = result[previousTabId];
+        //     var spent_time = timestampSeconds() - tab_info.start_timestamp;
+        //     var tab_open_time = tab_info.start_gmt_time;
+        //     send_visit_log(activeTab,time_,tab_open_time,spent_time);
+        //     chrome.storage.local.remove(tabId.toString());
+        //     chrome.storage.local.set({
+        //         [tabId] : { 
+        //             'start_timestamp' : timestampSeconds(),
+        //             'start_gmt_time' : time_
+        //         }
+        //     });
+        // }else{
+        //     send_visit_log(activeTab,time_);
+        //     chrome.storage.local.set({
+        //         [tabId] : { 
+        //             'start_timestamp' : timestampSeconds(),
+        //             'start_gmt_time' : time_
+        //         }
+        //     });
+        // }
+    });
+});
+
+*/
