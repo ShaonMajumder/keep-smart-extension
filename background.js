@@ -1,3 +1,7 @@
+import * as time from './time.js';
+import * as cookie from './cookie.js';
+
+
 const HOST_MAIN = "http://127.0.0.1:8000";
 const API_ENDPOINT = "/api/v1";
 const HOST_URL = HOST_MAIN+API_ENDPOINT;
@@ -6,77 +10,6 @@ const VISIT_LOG_URL = HOST_MAIN+API_ENDPOINT+'/visited';
 const LOGIN_PAGE = HOST_MAIN+"/login";
 const HOME_PAGE = HOST_MAIN+"/home";
 const TOKEN_PAGE = HOST_MAIN + '/exttoken';
-
-
-
-/**
- * Get cookie for given cookie name
- * @param {cookie name} cname 
- * @returns 
- */
-function getCookie(cname) {
-    let name = cname + "=";
-    let ca = document.cookie.split(';');
-    for(let i = 0; i < ca.length; i++) {
-        let c = ca[i];
-        while (c.charAt(0) == ' ') {
-        c = c.substring(1);
-        }
-        if (c.indexOf(name) == 0) {
-        return c.substring(name.length, c.length);
-        }
-    }
-}
-
-/**
- * Set cookie for a host 
- * @param {Cookie Name} cname 
- * @param {Cookie Value} cvalue 
- * @param {expires day} exdays 
- */
-function setCookie(cname, cvalue, exdays) {
-    const d = new Date();
-    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-    let expires = "expires="+d.toUTCString();
-    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-}
-
-function getUTCTime(){
-    var gmt_zero_time = new Date();
-    // gmt_zero_time.toUTCString();
-    var d2 = new Date( gmt_zero_time.getUTCFullYear(), gmt_zero_time.getUTCMonth(), gmt_zero_time.getUTCDate(), gmt_zero_time.getUTCHours(), gmt_zero_time.getUTCMinutes(), gmt_zero_time.getUTCSeconds() );
-    // Math.floor(d2.getTime()/ 1000) Time in seconds converted from miliseconds
-    // return d2.toUTCString();
-    return d2.toISOString();
-}
-
-function timestampString(unix_timestamp){
-    // let unix_timestamp = 1549312452
-    // Create a new JavaScript Date object based on the timestamp
-    // multiplied by 1000 so that the argument is in milliseconds, not seconds.
-    var date = new Date(unix_timestamp * 1000);
-    // Hours part from the timestamp
-    var hours = date.getHours();
-    // Minutes part from the timestamp
-    var minutes = "0" + date.getMinutes();
-    // Seconds part from the timestamp
-    var seconds = "0" + date.getSeconds();
-
-    // Will display time in 10:30:23 format
-    var formattedTime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
-
-    return formattedTime;
-}
-
-function getCurrentTimeUTC(){
-    //RETURN:
-    //      = number of milliseconds between current UTC time and midnight of January 1, 1970
-    var tmLoc = new Date();
-    //The offset is in minutes -- convert it to ms
-    return tmLoc.getTime() + tmLoc.getTimezoneOffset() * 60000;
-}
-
-// timestampString(getCurrentTimeUTC());
 
 /**
  * Parsing JSON response from web body
@@ -194,59 +127,12 @@ function close_login_popup(close_all_login=false){
         }
     });
 }
-function timestampSeconds(){
-    return new Date().getTime() / 1000;
-}
-
-/**
- * 
- * @returns Time Zone in String
- */
- function getTimeZone(){
-    return Intl.DateTimeFormat().resolvedOptions().timeZone;
-}
-
-/**
- * 
- * @param {TimeZone String} myTimezoneName 
- * @returns TimeZone Offset
- */
-function getTimezoneToOffset(myTimezoneName){
-    // Generating the formatted text
-    var options = {timeZone: myTimezoneName, timeZoneName: "short"};
-    var dateText = Intl.DateTimeFormat([], options).format(new Date);
-    
-    // Scraping the numbers we want from the text
-    var timezoneString = dateText.split(" ")[1].slice(3);
-    // Getting the offset
-    var timeZoneOffset_ = parseInt(timezoneString.split(':')[0])*60;
-    // Checking for a minutes offset and adding if appropriate
-    if (timezoneString.includes(":")) {
-        // console.log(timeZoneOffset_);
-        var timeZoneOffset_ = timeZoneOffset_ + parseInt(timezoneString.split(':')[1]);
-    }
-    return timeZoneOffset_;
-}
-
-function getTimezoneOffset(){
-    return getTimezoneToOffset(getTimeZone());
-}
 
 
-function getGMTString(){
-    return new Date().toString().match(/([A-Z]+[\+-][0-9]+)/)[1];
-}
 
-/**
- * 
- * @returns MYSQL DATE TIME FORMAT with GMT value passed
- */
-function localGMTTime(){
-    const locale_ = '';
-    var date = new Date();
-    var options = { hour12: false };
-    return date.toLocaleString('sv-SE', options) + ' ' + getGMTString();
-}
+
+
+
 
 /**
  * Function To send web browsing log of user
@@ -310,7 +196,7 @@ chrome.runtime.onInstalled.addListener(function(details){
 chrome.tabs.onCreated.addListener(function(tab){
     chrome.storage.local.set({
         [tab.id] : { 
-            'start_timestamp' : timestampSeconds(),
+            'start_timestamp' : time.timestampSeconds(),
             'start_gmt_time' : localGMTTime()
         }
     });
@@ -321,7 +207,7 @@ chrome.tabs.onCreated.addListener(function(tab){
  */
 chrome.tabs.onUpdated.addListener( function (tabId, changeInfo, tab) {
     if (changeInfo.status == 'complete') {
-        
+        alert(time.timestampSeconds());
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
             var activeTab = tabs[0];
             var time_ = localGMTTime();
@@ -329,13 +215,13 @@ chrome.tabs.onUpdated.addListener( function (tabId, changeInfo, tab) {
                 var allKeys = Object.keys(result);
                 if(allKeys.includes(tabId.toString())){
                     var tab_info = result[tabId];
-                    spent_time = timestampSeconds() - tab_info.start_timestamp;
+                    spent_time = time.timestampSeconds() - tab_info.start_timestamp;
                     var previous_time_ = tab_info.start_gmt_time;
                     send_visit_log(activeTab,time_,previous_time_,spent_time);
                     chrome.storage.local.remove(tabId.toString());
                     chrome.storage.local.set({
                         [tabId] : { 
-                            'start_timestamp' : timestampSeconds(),
+                            'start_timestamp' : time.timestampSeconds(),
                             'start_gmt_time' : time_
                         }
                     });
@@ -343,7 +229,7 @@ chrome.tabs.onUpdated.addListener( function (tabId, changeInfo, tab) {
                     send_visit_log(activeTab,time_);
                     chrome.storage.local.set({
                         [tabId] : { 
-                            'start_timestamp' : timestampSeconds(),
+                            'start_timestamp' : time.timestampSeconds(),
                             'start_gmt_time' : time_
                         }
                     });
