@@ -191,7 +191,7 @@ chrome.runtime.onInstalled.addListener(function(details){
             
         
         
-        // var time_ = localGMTTime();
+        // var time_ = time.localGMTTime();
 
         // chrome.storage.local.set({ 'active_tab' : activeTab.id });
         // chrome.storage.local.set({
@@ -234,7 +234,7 @@ chrome.tabs.onUpdated.addListener( function (tabId, changeInfo, tab) {
         alert(time.timestampSeconds());
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
             var activeTab = tabs[0];
-            var time_ = localGMTTime();
+            var time_ = time.localGMTTime();
             chrome.storage.local.get(null, function(result){
                 var allKeys = Object.keys(result);
                 if(allKeys.includes(tabId.toString())){
@@ -301,7 +301,7 @@ chrome.runtime.onMessage.addListener(function(request, sender) {
 chrome.tabs.onActiveChanged.addListener( function(tabId, info) {
     var currentTabId        = tabId;         // For comparison
     var windowId = info.windowId;
-    var time_ = localGMTTime();
+    var time_ = time.localGMTTime();
     alert('activated'+currentTabId);
     
     //currentTabId exists before or new

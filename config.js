@@ -1,0 +1,14 @@
+const HOST_MAIN = "http://127.0.0.1:8001";
+const API_ENDPOINT = "/api/v1";
+const API_HOST = HOST_MAIN+API_ENDPOINT;
+const WEBLOGIN_TOKEN_PAGE = HOST_MAIN+'/weblogin';
+
+const VISIT_LOG_URL = HOST_MAIN+API_ENDPOINT+'/visited';
+
+const LOGIN_PAGE = HOST_MAIN+"/login";
+const HOME_PAGE = HOST_MAIN+"/home";
+const TOKEN_PAGE = HOST_MAIN + '/exttoken';
+
+
+
+export { HOST_MAIN, API_ENDPOINT, API_HOST, VISIT_LOG_URL, LOGIN_PAGE, HOME_PAGE, TOKEN_PAGE, WEBLOGIN_TOKEN_PAGE };
