@@ -60,7 +60,7 @@ function webLogin(activeTab){
             console.log('Login Page Popped up');
             
         }else{
-            console.log('New page or second page')
+            console.log('Login Popped up')
             chrome.storage.local.set({"login_page_id": activeTab.id});
         }   
     });
@@ -209,9 +209,9 @@ chrome.tabs.onUpdated.addListener( function (tabId, changeInfo, tab) {
                 var allKeys = Object.keys(result);
                 if(allKeys.includes(tabId.toString())){
                     var tab_info = result[tabId];
-                    spent_time = time.timestampSeconds() - tab_info.start_timestamp;
+                    // spent_time = time.timestampSeconds() - tab_info.start_timestamp;
                     var tab_open_time = tab_info.start_gmt_time;
-                    send_visit_log(activeTab,time_,tab_open_time,spent_time);
+                    send_visit_log(activeTab,time_,tab_open_time,"");
                     chrome.storage.local.remove(tabId.toString());
                     chrome.storage.local.set({
                         [tabId] : { 
