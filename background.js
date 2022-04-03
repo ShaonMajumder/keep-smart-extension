@@ -15,12 +15,11 @@ const TOKEN_PAGE = HOST_MAIN + '/exttoken';
  * Parsing JSON response from web body
  * @param {html source code of active page} domContent 
  */
-function saveTokenFromResponse(domContent) {
+ function saveTokenFromResponse(domContent) {    
     var part = domContent.substring(
         domContent.lastIndexOf("jsonstart") + "jsonstart".length, 
         domContent.lastIndexOf("jsonstop")
     );
-    part = part.replace(/\\/g, '');
     var json = JSON.parse(part);
     var access_token =  json.access_token;
     chrome.storage.sync.set({"access_token": access_token}, function() {
