@@ -40,6 +40,7 @@ function webParserlogin(activeTab){
  * @param {*} activeTab 
  */
 function webLogin(activeTab){
+    console.log('Trying to Login');
     var loginAjax = $.ajax({
         url: config.WEBLOGIN_TOKEN_PAGE,
         dataType: 'json',
@@ -51,6 +52,7 @@ function webLogin(activeTab){
 
     loginAjax.done(function( responseData, textStatus, Lxhr ){
         var access_token = responseData.data.access_token;
+        chrome.storage.local.set({"access_token": access_token});
         close_login_popup();
     })
     .catch(function( jqXhr, textStatus, errorThrown ){
@@ -131,9 +133,9 @@ function close_login_popup(close_all_login=false){
  * @param {*} activeTab 
  */
 function send_visit_log(activeTab,time_,tab_open_time = null,spent_time = null){
-    const event = new Date('05 October 2011 14:48 UTC');
-
+    console.log('Sending Visit log ...');
     chrome.storage.local.get(['access_token'], function(result) {
+        console.log(result.access_token);
         var data = {
             title : activeTab.title,
             url : activeTab.url,
