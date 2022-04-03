@@ -102,7 +102,6 @@ function promptLogin(){
 function close_login_popup(close_all_login=false){
     console.log('trying to closing popup');
     chrome.storage.local.get(['login_page_id'], function(result) {    
-        console.log(result);
         if(close_all_login){
             chrome.tabs.query({},function(tabs){     
                 console.log("\n/////////////////////\n");
@@ -113,8 +112,11 @@ function close_login_popup(close_all_login=false){
                 });
             });
         }
-        chrome.tabs.remove(result.login_page_id, function() { });
-        chrome.storage.local.remove("login_page_id");
+
+        if(result.login_page_id){
+            chrome.tabs.remove(result.login_page_id, function() { });
+            chrome.storage.local.remove("login_page_id");
+        }
     });
 }
 
@@ -163,6 +165,7 @@ function send_visit_log(activeTab,time_,tab_open_time = null,spent_time = null){
     });
 }
 
+
 chrome.runtime.onInstalled.addListener(function(details){
     if(details.reason == "install"){
         //call a function to handle a first install
@@ -171,7 +174,33 @@ chrome.runtime.onInstalled.addListener(function(details){
         //call a function to handle an update
         console.log('thanks for updating');
     }
-   
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        let activeTab = tabs[0];
+        webLogin(activeTab);
+        
+        console.log('on installation after weblogin');
+        // .then(response => {
+        //     console.log('on installation after weblogin');
+        //     // if (response.status == 200) {
+        //     //   return response.json();
+        //     // } else {
+        //     //   throw new Error(response.status);
+        //     // }
+        // });
+            
+        
+        
+        // var time_ = time.localGMTTime();
+
+        // chrome.storage.local.set({ 'active_tab' : activeTab.id });
+        // chrome.storage.local.set({
+        //     [activeTab.id] : { 
+        //         'start_timestamp' : timestampSeconds(),
+        //         'start_gmt_time' : time_
+        //     }
+        // });
+        // send_visit_log(activeTab,time_);
+    });
     
 });
 
