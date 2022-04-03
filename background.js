@@ -51,14 +51,16 @@ function webLogin(activeTab){
 
     loginAjax.done(function( responseData, textStatus, Lxhr ){
         var access_token = responseData.data.access_token;
-        chrome.storage.local.set({"access_token": access_token});
         close_login_popup();
     })
     .catch(function( jqXhr, textStatus, errorThrown ){
         if ( jqXhr.status == 403 && activeTab.url != config.LOGIN_PAGE){
+            console.log('Login required and it is not login page');
             window.open(config.LOGIN_PAGE);
-            // here edit
+            console.log('Login Page Popped up');
+            
         }else{
+            console.log('New page or second page')
             chrome.storage.local.set({"login_page_id": activeTab.id});
         }   
     });
@@ -98,7 +100,9 @@ function promptLogin(){
  * @param {If true closes all login window} close_all_login 
  */
 function close_login_popup(close_all_login=false){
+    console.log('trying to closing popup');
     chrome.storage.local.get(['login_page_id'], function(result) {    
+        console.log(result);
         if(close_all_login){
             chrome.tabs.query({},function(tabs){     
                 console.log("\n/////////////////////\n");
@@ -162,37 +166,12 @@ function send_visit_log(activeTab,time_,tab_open_time = null,spent_time = null){
 chrome.runtime.onInstalled.addListener(function(details){
     if(details.reason == "install"){
         //call a function to handle a first install
-        alert('thanks for installing');
+        console.log('thanks for installing');
     }else if(details.reason == "update"){
         //call a function to handle an update
-        alert('thanks for updating');
+        console.log('thanks for updating');
     }
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-        let activeTab = tabs[0];
-        webLogin(activeTab);
-        alert('on installation after weblogin');
-        // .then(response => {
-        //     alert('on installation after weblogin');
-        //     // if (response.status == 200) {
-        //     //   return response.json();
-        //     // } else {
-        //     //   throw new Error(response.status);
-        //     // }
-        // });
-            
-        
-        
-        // var time_ = time.localGMTTime();
-
-        // chrome.storage.local.set({ 'active_tab' : activeTab.id });
-        // chrome.storage.local.set({
-        //     [activeTab.id] : { 
-        //         'start_timestamp' : timestampSeconds(),
-        //         'start_gmt_time' : time_
-        //     }
-        // });
-        // send_visit_log(activeTab,time_);
-    });
+   
     
 });
 
@@ -203,11 +182,11 @@ chrome.runtime.onInstalled.addListener(function(details){
  */
 /*
 chrome.tabs.onCreated.addListener(function(tab){
-    alert('tab created '+tab.id);
+    console.log('tab created '+tab.id);
     chrome.storage.local.set({ 'active_tab' : tab.id });
     chrome.storage.local.set({
         [tab.id] : { 
-            'start_timestamp'   : timestampSeconds(),
+            'start_timestamp'   : time.timestampSeconds(),
             'start_gmt_time'    : localGMTTime()
         }
     });
@@ -219,10 +198,10 @@ chrome.tabs.onCreated.addListener(function(tab){
 /**
  * On Page Load
  */
-/*
+
 chrome.tabs.onUpdated.addListener( function (tabId, changeInfo, tab) {
     if (changeInfo.status == 'complete') {
-        alert(time.timestampSeconds());
+        console.log(time.timestampSeconds());
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
             var activeTab = tabs[0];
             var time_ = time.localGMTTime();
@@ -230,7 +209,7 @@ chrome.tabs.onUpdated.addListener( function (tabId, changeInfo, tab) {
                 var allKeys = Object.keys(result);
                 if(allKeys.includes(tabId.toString())){
                     var tab_info = result[tabId];
-                    spent_time = timestampSeconds() - tab_info.start_timestamp;
+                    spent_time = time.timestampSeconds() - tab_info.start_timestamp;
                     var tab_open_time = tab_info.start_gmt_time;
                     send_visit_log(activeTab,time_,tab_open_time,spent_time);
                     chrome.storage.local.remove(tabId.toString());
@@ -262,13 +241,15 @@ chrome.runtime.onMessage.addListener(function(request, sender) {
     if (request.action == "getSource") {
         this.pageSource = request.source;
         var title = this.pageSource.match(/<title[^>]*>([^<]+)<\/title>/)[1];
-        alert(title)
+        console.log(title)
     }
 });
 
+/*
+
 // chrome.tabs.onCreated.addListener( function (tabId, changeInfo, tab) {
 //     if (changeInfo.status == 'complete') {
-//         alert('creatd');
+//         console.log('creatd');
 //         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
 //             var activeTab = tabs[0];
 //             send_visit_log(activeTab);
@@ -277,11 +258,11 @@ chrome.runtime.onMessage.addListener(function(request, sender) {
 // })
 
 // chrome.tabs.onRemoved.addListener(function(tabid, removed) {
-//     alert("tab closed")
+//     console.log("tab closed")
 //    })
 
 // chrome.windows.onRemoved.addListener(function(windowid) {
-//     alert("window closed")
+//     console.log("window closed")
 //    })
 
 // chrome.tabs.onActivated.addListener(
@@ -293,7 +274,7 @@ chrome.tabs.onActiveChanged.addListener( function(tabId, info) {
     var currentTabId        = tabId;         // For comparison
     var windowId = info.windowId;
     var time_ = time.localGMTTime();
-    alert('activated'+currentTabId);
+    console.log('activated'+currentTabId);
     
     //currentTabId exists before or new
 
@@ -306,9 +287,9 @@ chrome.tabs.onActiveChanged.addListener( function(tabId, info) {
             if(currentTabId != previousTabId){
                 var previousTabId = result.active_tab;
                 var previous_tab_info = result[previousTabId];
-                alert(previousTabId);
+                console.log(previousTabId);
                 // if(previous_tab_info.start_timestamp != null){
-                //     var spent_time = timestampSeconds() - previous_tab_info.start_timestamp;
+                //     var spent_time = time.timestampSeconds() - previous_tab_info.start_timestamp;
                 //     var previous_tab_open_time = tab_info.start_gmt_time;
                 //     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
                 //         console.log(tabs);
@@ -316,7 +297,7 @@ chrome.tabs.onActiveChanged.addListener( function(tabId, info) {
                 //         tabs.forEach(element=>{
                 //             console.log(element.id);
                 //             if(element.id == previousTabId){
-                //                 alert('orange');
+                //                 console.log('orange');
                 //             }
                 //         })
 
@@ -343,7 +324,7 @@ chrome.tabs.onActiveChanged.addListener( function(tabId, info) {
             // chrome.storage.local.remove(tabId.toString());
             // chrome.storage.local.set({
             //     [tabId] : { 
-            //         'start_timestamp' : timestampSeconds(),
+            //         'start_timestamp' : time.timestampSeconds(),
             //         'start_gmt_time' : tab_open_time
             //     }
             // });
@@ -351,13 +332,13 @@ chrome.tabs.onActiveChanged.addListener( function(tabId, info) {
 
         // if(allKeys.includes(tabId.toString())){
         //     var tab_info = result[previousTabId];
-        //     var spent_time = timestampSeconds() - tab_info.start_timestamp;
+        //     var spent_time = time.timestampSeconds() - tab_info.start_timestamp;
         //     var tab_open_time = tab_info.start_gmt_time;
         //     send_visit_log(activeTab,time_,tab_open_time,spent_time);
         //     chrome.storage.local.remove(tabId.toString());
         //     chrome.storage.local.set({
         //         [tabId] : { 
-        //             'start_timestamp' : timestampSeconds(),
+        //             'start_timestamp' : time.timestampSeconds(),
         //             'start_gmt_time' : time_
         //         }
         //     });
@@ -365,7 +346,7 @@ chrome.tabs.onActiveChanged.addListener( function(tabId, info) {
         //     send_visit_log(activeTab,time_);
         //     chrome.storage.local.set({
         //         [tabId] : { 
-        //             'start_timestamp' : timestampSeconds(),
+        //             'start_timestamp' : time.timestampSeconds(),
         //             'start_gmt_time' : time_
         //         }
         //     });
