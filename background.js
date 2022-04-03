@@ -1,15 +1,6 @@
 import * as time from './time.js';
 import * as cookie from './cookie.js';
-
-
-const HOST_MAIN = "http://127.0.0.1:8000";
-const API_ENDPOINT = "/api/v1";
-const HOST_URL = HOST_MAIN+API_ENDPOINT;
-const VISIT_LOG_URL = HOST_MAIN+API_ENDPOINT+'/visited';
-
-const LOGIN_PAGE = HOST_MAIN+"/login";
-const HOME_PAGE = HOST_MAIN+"/home";
-const TOKEN_PAGE = HOST_MAIN + '/exttoken';
+import * as config from './config.js';
 
 /**
  * Parsing JSON response from web body
@@ -33,10 +24,10 @@ const TOKEN_PAGE = HOST_MAIN + '/exttoken';
  * @param {*} activeTab 
  */
 function webParserlogin(activeTab){
-    if ( activeTab.url == LOGIN_PAGE){
+    if ( activeTab.url == config.LOGIN_PAGE){
 
-    }else if ( activeTab.url != TOKEN_PAGE){
-        window.open(TOKEN_PAGE);
+    }else if ( activeTab.url != config.TOKEN_PAGE){
+        window.open(config.TOKEN_PAGE);
     }else{
         chrome.tabs.sendMessage(activeTab.id, {text: 'receive_token_page'}, saveTokenFromResponse);
         chrome.tabs.remove(activeTab.id, function(){});
@@ -50,7 +41,7 @@ function webParserlogin(activeTab){
  */
 function webLogin(activeTab){
     var loginAjax = $.ajax({
-        url: HOST_MAIN+'/weblogin',
+        url: config.WEBLOGIN_TOKEN_PAGE,
         dataType: 'json',
         type: 'get',
         contentType: 'application/json',
@@ -64,8 +55,8 @@ function webLogin(activeTab){
         close_login_popup();
     })
     .catch(function( jqXhr, textStatus, errorThrown ){
-        if ( jqXhr.status == 403 && activeTab.url != LOGIN_PAGE){
-            window.open(LOGIN_PAGE);
+        if ( jqXhr.status == 403 && activeTab.url != config.LOGIN_PAGE){
+            window.open(config.LOGIN_PAGE);
             // here edit
         }else{
             chrome.storage.local.set({"login_page_id": activeTab.id});
@@ -84,7 +75,7 @@ function promptLogin(){
         "password" : password
     }
     $.ajax({
-        url: HOST_MAIN+'/api/v1/login',
+        url: config.HOST_MAIN+'/api/v1/login',
         dataType: 'json',
         type: 'post',
         contentType: 'application/json',
@@ -113,7 +104,7 @@ function close_login_popup(close_all_login=false){
                 console.log("\n/////////////////////\n");
                 tabs.forEach(function(tab){
                 console.log(tab.url);
-                if(tab.url == HOME_PAGE)
+                if(tab.url == config.HOME_PAGE)
                     chrome.tabs.remove(tab.id, function() { });
                 });
             });
@@ -146,7 +137,7 @@ function send_visit_log(activeTab,time_,tab_open_time = null,spent_time = null){
             spent_time : spent_time
         };
         $.ajax({
-            url: VISIT_LOG_URL,
+            url: config.VISIT_LOG_URL,
             dataType: 'json',
             type: 'post',
             contentType: 'application/json',
