@@ -197,7 +197,7 @@ chrome.tabs.onCreated.addListener(function(tab){
     chrome.storage.local.set({
         [tab.id] : { 
             'start_timestamp' : time.timestampSeconds(),
-            'start_gmt_time' : localGMTTime()
+            'start_gmt_time' : time.localGMTTime()
         }
     });
 }); 
@@ -207,10 +207,12 @@ chrome.tabs.onCreated.addListener(function(tab){
  */
 chrome.tabs.onUpdated.addListener( function (tabId, changeInfo, tab) {
     if (changeInfo.status == 'complete') {
-        alert(time.timestampSeconds());
+        chrome.tabs.sendMessage(tabId, {text: 'alert'}, function(){
+
+        });
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
             var activeTab = tabs[0];
-            var time_ = localGMTTime();
+            var time_ = time.localGMTTime();
             chrome.storage.local.get(null, function(result){
                 var allKeys = Object.keys(result);
                 if(allKeys.includes(tabId.toString())){

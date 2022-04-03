@@ -17,7 +17,7 @@
   "content_scripts": [
     {
       "matches": ["http://*/*"],
-      "js": ["content.js","jquery-3.6.0.min.js","jquery-3.5.1.min.js","select2.min.js"]
+      "js": ["jquery-3.6.0.min.js","jquery-3.5.1.min.js","select2.min.js","sweetalert.min.js","content.js"]
     }
   ],
   "options_ui": {
