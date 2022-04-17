@@ -2,6 +2,8 @@ import * as time from './time.js';
 import * as cookie from './cookie.js';
 import * as config from './config.js';
 
+var MENU_ITEM_PARENT_ID = "keep_smart_paretnt_id";
+
 /**
  * Parsing JSON response from web body
  * @param {html source code of active page} domContent 
@@ -171,7 +173,15 @@ function send_visit_log(activeTab,log_time_,tab_open_time = null,spent_time = nu
 }
 
 
+
 chrome.runtime.onInstalled.addListener(function(details){
+
+    chrome.contextMenus.create({
+        title: 'Keep Smart',
+        contexts: ["all"],
+        id: MENU_ITEM_PARENT_ID
+    });
+
     if(details.reason == "install"){
         //call a function to handle a first install
         console.log('thanks for installing');
@@ -261,6 +271,16 @@ chrome.runtime.onMessage.addListener(function(request, sender) {
         this.pageSource = request.source;
         var title = this.pageSource.match(/<title[^>]*>([^<]+)<\/title>/)[1];
         console.log(title)
+    }
+});
+
+function basicPopup(url) {
+    popupWindow = window.open(url,'popUpWindow','height=500,width=500,left=100,top=100,resizable=yes,scrollbars=yes,toolbar=yes,menubar=no,location=no,directories=no, status=yes');
+}
+
+chrome.contextMenus.onClicked.addListener(function (tab) {
+    if (tab.menuItemId == MENU_ITEM_PARENT_ID ) {
+        basicPopup(config.KEEP_PAGE);
     }
 });
 
