@@ -159,6 +159,9 @@ function send_visit_log(activeTab,log_time_,tab_open_time = null,spent_time = nu
                 // console.log( JSON.stringify( responseData )  );
             },
             error: function( jqXhr, textStatus, errorThrown ){
+                if(jqXhr.status == 0){
+                    alert("Server is shutdown may be !");
+                }
                 if(jqXhr.status == 401)
                     webLogin(activeTab);
             }
