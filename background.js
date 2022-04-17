@@ -237,29 +237,12 @@ chrome.tabs.onUpdated.addListener( function (tabId, changeInfo, tab) {
             var activeTab = tabs[0];
             var log_time_ = time.localGMTTime();
 
-            chrome.storage.local.get(null, function(result){
-                var allKeys = Object.keys(result);
-                if(allKeys.includes(tabId.toString())){
-                    var tab_info = result[tabId];
-                    var spent_time = time.timestampSeconds() - tab_info.start_timestamp;
-                    var tab_open_time = tab_info.start_gmt_time;
-                    send_visit_log(activeTab,log_time_,tab_open_time,spent_time);
-                    chrome.storage.local.remove(tabId.toString());
-                    chrome.storage.local.set({
-                        [tabId] : { 
-                            'start_timestamp' : time.timestampSeconds(),
-                            'start_gmt_time' : log_time_
-                        }
-                    });
-                }else{
-                    console.log('Store tab '+activeTab.id)
-                    send_visit_log(activeTab,log_time_);
-                    chrome.storage.local.set({
-                        [tabId] : { 
-                            'start_timestamp' : time.timestampSeconds(),
-                            'start_gmt_time' : log_time_
-                        }
-                    });
+            console.log('Store tab '+activeTab.id)
+            send_visit_log(activeTab,log_time_);
+            chrome.storage.local.set({
+                [tabId] : { 
+                    'start_timestamp' : time.timestampSeconds(),
+                    'start_gmt_time' : log_time_
                 }
             });
 
